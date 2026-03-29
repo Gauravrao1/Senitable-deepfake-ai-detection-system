@@ -1,0 +1,13 @@
+# SentinelAI
+node_modules/
+__pycache__/
+*.pyc
+*.pyo
+venv/
+.env
+uploads/
+dist/
+build/
+*.egg-info/
+.DS_Store
+Thumbs.db
