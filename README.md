@@ -13,7 +13,6 @@
 </div>
 
 ---
-
 ## 🎯 What is SentinelAI?
 
 SentinelAI is a **comprehensive deepfake and AI-generated content detection platform** that analyzes three types of media:
