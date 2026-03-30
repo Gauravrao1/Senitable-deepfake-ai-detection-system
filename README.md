@@ -110,7 +110,6 @@ python run.py
 ```
 
 The API will be available at **http://localhost:8000**
-
 API Docs: **http://localhost:8000/docs** (Swagger UI)
 
 ### 2. Frontend Setup
