@@ -207,7 +207,6 @@ The app will open at **http://localhost:3000**
 ---
 
 ## 🛠️ Tech Stack
-
 | Layer | Technology |
 |-------|-----------|
 | **Frontend** | React 18, Tailwind CSS 3.4, Framer Motion, Chart.js, React Router |
@@ -220,7 +219,6 @@ The app will open at **http://localhost:3000**
 ---
 
 ## 📄 License
-
 This project is built for educational and research purposes in AI safety.
 
 ---
