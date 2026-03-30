@@ -226,5 +226,4 @@ This project is built for educational and research purposes in AI safety.
 ---
 
 <div align="center">
-<b>Built with ❤️ for a safer digital world</b>
 </div>
