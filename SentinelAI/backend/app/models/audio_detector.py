@@ -192,18 +192,55 @@ def analyze_audio(audio_bytes: bytes) -> dict:
 
     indicators = _analyze_deepfake_indicators(features)
 
+    # Very short clips are often unreliable for robust deepfake decisions.
+    if features["duration"] < 2.0:
+        return {
+            "verdict": "INCONCLUSIVE - AUDIO TOO SHORT",
+            "risk_level": "MEDIUM",
+            "confidence": 50.0,
+            "is_fake_probability": 0.5,
+            "is_real_probability": 0.5,
+            "decision_policy": "strict_v2",
+            "audio_info": {
+                "duration_seconds": features["duration"],
+                "sample_rate": features["sample_rate"],
+                "tempo_bpm": features["tempo"],
+            },
+            "analysis_details": {
+                "note": {
+                    "score": 50.0,
+                    "interpretation": "Upload at least 2 seconds for reliable voice-cloning analysis.",
+                }
+            },
+            "spectral_features": {
+                "mfcc_mean": features["mfcc_mean"],
+                "spectral_centroid": features["spectral_centroid_mean"],
+                "spectral_bandwidth": features["spectral_bandwidth_mean"],
+                "pitch_mean": features["pitch_mean"],
+                "pitch_std": features["pitch_std"],
+            },
+            "spectrogram": features["spectrogram"],
+        }
+
     # Calculate overall probability
     scores = [ind["score"] for ind in indicators.values()]
     weights = [0.25, 0.25, 0.2, 0.15, 0.15]  # mfcc, pitch, spectral, zcr, energy
     fake_probability = sum(s * w for s, w in zip(scores, weights))
     fake_probability = max(0.0, min(1.0, fake_probability))
 
+    # Conservative calibration around uncertainty band.
+    if abs(fake_probability - 0.5) < 0.08:
+        fake_probability = 0.5
+
     # Verdict
-    if fake_probability >= 0.65:
+    if fake_probability >= 0.78:
         verdict = "LIKELY SYNTHETIC/CLONED VOICE"
         risk_level = "HIGH"
-    elif fake_probability >= 0.4:
+    elif fake_probability >= 0.62:
         verdict = "SUSPICIOUS — POSSIBLE VOICE MANIPULATION"
+        risk_level = "MEDIUM"
+    elif fake_probability > 0.38:
+        verdict = "INCONCLUSIVE - NEEDS CLEANER OR LONGER AUDIO"
         risk_level = "MEDIUM"
     else:
         verdict = "LIKELY AUTHENTIC VOICE"
@@ -215,6 +252,7 @@ def analyze_audio(audio_bytes: bytes) -> dict:
         "confidence": round(fake_probability * 100, 2),
         "is_fake_probability": round(fake_probability, 4),
         "is_real_probability": round(1 - fake_probability, 4),
+        "decision_policy": "strict_v2",
         "audio_info": {
             "duration_seconds": features["duration"],
             "sample_rate": features["sample_rate"],

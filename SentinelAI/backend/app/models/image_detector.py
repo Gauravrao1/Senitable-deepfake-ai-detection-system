@@ -214,8 +214,8 @@ def analyze_image(image_bytes: bytes) -> dict:
                 probabilities = torch.softmax(output, dim=1)
                 nn_fake_prob = probabilities[0][1].item()
 
-            # Blend pixel analysis with neural network
-            fake_probability = 0.4 * fake_probability + 0.6 * nn_fake_prob
+            # Blend pixel analysis with neural network conservatively.
+            fake_probability = 0.35 * fake_probability + 0.65 * nn_fake_prob
 
         except Exception as e:
             logger.warning(f"Neural network inference failed: {e}")
@@ -223,12 +223,19 @@ def analyze_image(image_bytes: bytes) -> dict:
     # Generate heatmap
     heatmap = _generate_heatmap(img_array, pixel_analysis)
 
+    # Conservative calibration around uncertainty band.
+    if abs(fake_probability - 0.5) < 0.08:
+        fake_probability = 0.5
+
     # Determine verdict
-    if fake_probability >= 0.75:
+    if fake_probability >= 0.82:
         verdict = "LIKELY AI-GENERATED/MANIPULATED"
         risk_level = "HIGH"
-    elif fake_probability >= 0.45:
+    elif fake_probability >= 0.62:
         verdict = "SUSPICIOUS - POSSIBLE MANIPULATION"
+        risk_level = "MEDIUM"
+    elif fake_probability > 0.38:
+        verdict = "INCONCLUSIVE - NEEDS HIGHER-QUALITY IMAGE"
         risk_level = "MEDIUM"
     else:
         verdict = "LIKELY AUTHENTIC"
@@ -240,6 +247,7 @@ def analyze_image(image_bytes: bytes) -> dict:
         "confidence": round(fake_probability * 100, 2),
         "is_fake_probability": round(fake_probability, 4),
         "is_real_probability": round(1 - fake_probability, 4),
+        "decision_policy": "strict_v2",
         "analysis_details": {
             "noise_analysis": {
                 "score": round(pixel_analysis["noise_level"], 4),

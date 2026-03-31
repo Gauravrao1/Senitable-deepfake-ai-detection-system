@@ -23,11 +23,11 @@ def _load_model():
 
     try:
         from transformers import AutoTokenizer, AutoModelForSequenceClassification
-        import torch
 
-        model_name = "roberta-base"
+        # This checkpoint is explicitly trained for AI-generated text detection.
+        model_name = "roberta-base-openai-detector"
         _tokenizer = AutoTokenizer.from_pretrained(model_name)
-        _model = AutoModelForSequenceClassification.from_pretrained(model_name, num_labels=2)
+        _model = AutoModelForSequenceClassification.from_pretrained(model_name)
         _model.eval()
         logger.info("Text detection model loaded successfully")
         return _model, _tokenizer
@@ -232,16 +232,25 @@ def analyze_text(text: str) -> dict:
                 probs = torch.softmax(outputs.logits, dim=1)
                 nn_ai_prob = probs[0][1].item()
 
-            ai_probability = 0.5 * ai_probability + 0.5 * nn_ai_prob
+            # Statistical and neural outputs are blended conservatively.
+            ai_probability = 0.45 * ai_probability + 0.55 * nn_ai_prob
         except Exception as e:
             logger.warning(f"Transformer inference failed: {e}")
 
+    # Conservative calibration: push weak evidence toward uncertainty.
+    distance_from_mid = abs(ai_probability - 0.5)
+    if distance_from_mid < 0.08:
+        ai_probability = 0.5
+
     # Verdict
-    if ai_probability >= 0.75:
+    if ai_probability >= 0.82:
         verdict = "LIKELY AI-GENERATED"
         risk_level = "HIGH"
-    elif ai_probability >= 0.45:
-        verdict = "MIXED/UNCERTAIN - POSSIBLY AI-ASSISTED"
+    elif ai_probability >= 0.62:
+        verdict = "POSSIBLY AI-ASSISTED"
+        risk_level = "MEDIUM"
+    elif ai_probability > 0.38:
+        verdict = "INCONCLUSIVE - NEEDS LONGER OR HIGHER-QUALITY TEXT"
         risk_level = "MEDIUM"
     else:
         verdict = "LIKELY HUMAN-WRITTEN"
@@ -275,6 +284,7 @@ def analyze_text(text: str) -> dict:
         "confidence": round(ai_probability * 100, 2),
         "is_ai_probability": round(ai_probability, 4),
         "is_human_probability": round(1 - ai_probability, 4),
+        "decision_policy": "strict_v2",
         "word_count": word_count,
         "analysis_details": {
             "perplexity_features": perplexity_features,

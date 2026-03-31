@@ -272,13 +272,18 @@ def _compute_verdict(byte_analysis: dict, frame_consistency: dict, frame_quality
         scores.append(0.15)
 
     fake_probability = sum(scores) / len(scores)
+    if abs(fake_probability - 0.5) < 0.08:
+        fake_probability = 0.5
     confidence = round(fake_probability * 100, 1)
 
-    if confidence >= 60:
+    if confidence >= 78:
         verdict = "LIKELY AI-GENERATED / DEEPFAKE"
         risk_level = "HIGH"
-    elif confidence >= 35:
+    elif confidence >= 62:
         verdict = "POSSIBLY MANIPULATED"
+        risk_level = "MEDIUM"
+    elif confidence > 38:
+        verdict = "INCONCLUSIVE - NEEDS HIGHER-QUALITY VIDEO"
         risk_level = "MEDIUM"
     else:
         verdict = "LIKELY AUTHENTIC"
@@ -290,6 +295,7 @@ def _compute_verdict(byte_analysis: dict, frame_consistency: dict, frame_quality
         "risk_level": risk_level,
         "is_fake_probability": round(fake_probability, 4),
         "is_real_probability": round(1 - fake_probability, 4),
+        "decision_policy": "strict_v2",
     }
 
 
@@ -304,6 +310,23 @@ def analyze_video(video_bytes: bytes) -> Dict[str, Any]:
 
         # Extract frames
         frames, video_info = _extract_frames_from_bytes(video_bytes)
+
+        if video_info.get("duration", 0) and video_info["duration"] < 2.0:
+            return {
+                "verdict": "INCONCLUSIVE - VIDEO TOO SHORT",
+                "confidence": 50.0,
+                "risk_level": "MEDIUM",
+                "is_fake_probability": 0.5,
+                "is_real_probability": 0.5,
+                "decision_policy": "strict_v2",
+                "analysis_details": {
+                    "note": {
+                        "score": 0.5,
+                        "interpretation": "Upload at least 2 seconds for reliable temporal deepfake analysis.",
+                    }
+                },
+                "video_info": video_info,
+            }
 
         # Byte-level analysis (always works)
         byte_analysis = _analyze_byte_patterns(video_bytes)
