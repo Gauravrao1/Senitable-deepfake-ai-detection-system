@@ -242,19 +242,20 @@ def analyze_text(text: str) -> dict:
     if distance_from_mid < 0.08:
         ai_probability = 0.5
 
-    # Verdict
-    if ai_probability >= 0.82:
+    # Verdict (strict against opposite outcomes):
+    # only assign human when AI probability is clearly low.
+    if ai_probability >= 0.78:
         verdict = "LIKELY AI-GENERATED"
         risk_level = "HIGH"
     elif ai_probability >= 0.62:
         verdict = "POSSIBLY AI-ASSISTED"
         risk_level = "MEDIUM"
-    elif ai_probability > 0.38:
-        verdict = "INCONCLUSIVE - NEEDS LONGER OR HIGHER-QUALITY TEXT"
-        risk_level = "MEDIUM"
-    else:
+    elif ai_probability <= 0.30:
         verdict = "LIKELY HUMAN-WRITTEN"
         risk_level = "LOW"
+    else:
+        verdict = "INCONCLUSIVE - NEEDS LONGER OR HIGHER-QUALITY TEXT"
+        risk_level = "MEDIUM"
 
     # Per-sentence breakdown
     sentences = re.split(r'(?<=[.!?])\s+', text)

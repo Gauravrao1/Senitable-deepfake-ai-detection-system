@@ -227,19 +227,20 @@ def analyze_image(image_bytes: bytes) -> dict:
     if abs(fake_probability - 0.5) < 0.08:
         fake_probability = 0.5
 
-    # Determine verdict
-    if fake_probability >= 0.82:
+    # Determine verdict (strict against opposite outcomes):
+    # only assign authentic when fake probability is clearly low.
+    if fake_probability >= 0.78:
         verdict = "LIKELY AI-GENERATED/MANIPULATED"
         risk_level = "HIGH"
     elif fake_probability >= 0.62:
         verdict = "SUSPICIOUS - POSSIBLE MANIPULATION"
         risk_level = "MEDIUM"
-    elif fake_probability > 0.38:
-        verdict = "INCONCLUSIVE - NEEDS HIGHER-QUALITY IMAGE"
-        risk_level = "MEDIUM"
-    else:
+    elif fake_probability <= 0.30:
         verdict = "LIKELY AUTHENTIC"
         risk_level = "LOW"
+    else:
+        verdict = "INCONCLUSIVE - NEEDS HIGHER-QUALITY IMAGE"
+        risk_level = "MEDIUM"
 
     return {
         "verdict": verdict,

@@ -46,6 +46,29 @@ const ResultCard = ({ type, data, filename }) => {
   const risk = riskConfig[data.risk_level] || riskConfig.UNKNOWN;
   const RiskIcon = risk.icon;
 
+  const aiProbability = data.is_fake_probability ?? data.is_ai_probability ?? 0;
+  const realProbability = data.is_real_probability ?? data.is_human_probability ?? 0;
+  const verdictText = (data.verdict || "").toUpperCase();
+
+  let displayConfidence = data.confidence ?? 0;
+  if (verdictText.includes("INCONCLUSIVE")) {
+    displayConfidence = 50;
+  } else if (
+    verdictText.includes("HUMAN") ||
+    verdictText.includes("AUTHENTIC")
+  ) {
+    displayConfidence = realProbability * 100;
+  } else if (
+    verdictText.includes("AI") ||
+    verdictText.includes("FAKE") ||
+    verdictText.includes("MANIPULAT") ||
+    verdictText.includes("DEEPFAKE") ||
+    verdictText.includes("SYNTHETIC")
+  ) {
+    displayConfidence = aiProbability * 100;
+  }
+  displayConfidence = Math.max(0, Math.min(100, Number(displayConfidence.toFixed(1))));
+
   const typeLabels = {
     image: "Image Deepfake Detection",
     text: "AI Text Detection",
@@ -88,12 +111,12 @@ const ResultCard = ({ type, data, filename }) => {
         <div>
           <div className="flex justify-between text-sm mb-2">
             <span className="text-dark-400">Confidence Level</span>
-            <span className={`font-bold ${risk.color}`}>{data.confidence}%</span>
+            <span className={`font-bold ${risk.color}`}>{displayConfidence}%</span>
           </div>
           <div className="w-full bg-dark-700 rounded-full h-4 overflow-hidden">
             <motion.div
               initial={{ width: 0 }}
-              animate={{ width: `${data.confidence}%` }}
+              animate={{ width: `${displayConfidence}%` }}
               transition={{ duration: 1, ease: "easeOut" }}
               className={`h-full rounded-full ${risk.barColor} relative`}
             >
@@ -106,7 +129,7 @@ const ResultCard = ({ type, data, filename }) => {
         <div className="grid grid-cols-2 gap-4">
           <div className="bg-dark-800/50 rounded-xl p-4 text-center">
             <p className="text-3xl font-black text-red-400">
-              {((data.is_fake_probability || data.is_ai_probability || 0) * 100).toFixed(1)}%
+              {(aiProbability * 100).toFixed(1)}%
             </p>
             <p className="text-xs text-dark-400 mt-1 uppercase tracking-wide">
               {type === "text" ? "AI Generated" : "Fake / Manipulated"}
@@ -114,7 +137,7 @@ const ResultCard = ({ type, data, filename }) => {
           </div>
           <div className="bg-dark-800/50 rounded-xl p-4 text-center">
             <p className="text-3xl font-black text-emerald-400">
-              {((data.is_real_probability || data.is_human_probability || 0) * 100).toFixed(1)}%
+              {(realProbability * 100).toFixed(1)}%
             </p>
             <p className="text-xs text-dark-400 mt-1 uppercase tracking-wide">
               {type === "text" ? "Human Written" : "Authentic"}

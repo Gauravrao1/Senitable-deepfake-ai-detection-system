@@ -282,12 +282,12 @@ def _compute_verdict(byte_analysis: dict, frame_consistency: dict, frame_quality
     elif confidence >= 62:
         verdict = "POSSIBLY MANIPULATED"
         risk_level = "MEDIUM"
-    elif confidence > 38:
-        verdict = "INCONCLUSIVE - NEEDS HIGHER-QUALITY VIDEO"
-        risk_level = "MEDIUM"
-    else:
+    elif confidence <= 30:
         verdict = "LIKELY AUTHENTIC"
         risk_level = "LOW"
+    else:
+        verdict = "INCONCLUSIVE - NEEDS HIGHER-QUALITY VIDEO"
+        risk_level = "MEDIUM"
 
     return {
         "verdict": verdict,
