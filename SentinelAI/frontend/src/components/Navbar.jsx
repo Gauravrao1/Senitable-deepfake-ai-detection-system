@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { HiShieldCheck, HiMenu, HiX } from "react-icons/hi";
+import { useAuth } from "../context/AuthContext";
 
 const navLinks = [
   { path: "/", label: "Home" },
@@ -14,6 +15,12 @@ const navLinks = [
 const Navbar = () => {
   const location = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const { user, logout } = useAuth();
+
+  const handleLogout = () => {
+    logout();
+    setMobileOpen(false);
+  };
 
   return (
     <nav className="sticky top-0 z-50 glass-card border-b border-dark-700/50 backdrop-blur-2xl">
@@ -30,19 +37,48 @@ const Navbar = () => {
 
           {/* Desktop Nav */}
           <div className="hidden md:flex items-center gap-1">
-            {navLinks.map((link) => (
-              <Link
-                key={link.path}
-                to={link.path}
-                className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 ${
-                  location.pathname === link.path
-                    ? "bg-primary-500/15 text-primary-400 shadow-sm"
-                    : "text-dark-300 hover:text-white hover:bg-dark-700/50"
-                }`}
-              >
-                {link.label}
-              </Link>
-            ))}
+            {user &&
+              navLinks.map((link) => (
+                <Link
+                  key={link.path}
+                  to={link.path}
+                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 ${
+                    location.pathname === link.path
+                      ? "bg-primary-500/15 text-primary-400 shadow-sm"
+                      : "text-dark-300 hover:text-white hover:bg-dark-700/50"
+                  }`}
+                >
+                  {link.label}
+                </Link>
+              ))}
+            {user ? (
+              <>
+                <span className="ml-2 px-3 py-2 text-sm text-dark-100 bg-dark-800/70 rounded-lg border border-dark-600/70">
+                  {user.name}
+                </span>
+                <button
+                  onClick={handleLogout}
+                  className="ml-1 px-3 py-2 text-sm font-medium rounded-lg text-red-200 bg-red-500/10 border border-red-500/30 hover:bg-red-500/20 transition-all"
+                >
+                  Logout
+                </button>
+              </>
+            ) : (
+              <>
+                <Link
+                  to="/login"
+                  className="ml-2 px-3 py-2 text-sm font-medium rounded-lg text-dark-100 hover:text-white hover:bg-dark-700/50 transition-all"
+                >
+                  Login
+                </Link>
+                <Link
+                  to="/register"
+                  className="px-3 py-2 text-sm font-semibold rounded-lg text-white bg-primary-600 hover:bg-primary-500 transition-all"
+                >
+                  Register
+                </Link>
+              </>
+            )}
           </div>
 
           {/* Mobile toggle */}
@@ -57,20 +93,49 @@ const Navbar = () => {
         {/* Mobile Nav */}
         {mobileOpen && (
           <div className="md:hidden pb-4 space-y-1">
-            {navLinks.map((link) => (
-              <Link
-                key={link.path}
-                to={link.path}
-                onClick={() => setMobileOpen(false)}
-                className={`block px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-                  location.pathname === link.path
-                    ? "bg-primary-500/15 text-primary-400"
-                    : "text-dark-300 hover:text-white hover:bg-dark-700/50"
-                }`}
-              >
-                {link.label}
-              </Link>
-            ))}
+            {user &&
+              navLinks.map((link) => (
+                <Link
+                  key={link.path}
+                  to={link.path}
+                  onClick={() => setMobileOpen(false)}
+                  className={`block px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                    location.pathname === link.path
+                      ? "bg-primary-500/15 text-primary-400"
+                      : "text-dark-300 hover:text-white hover:bg-dark-700/50"
+                  }`}
+                >
+                  {link.label}
+                </Link>
+              ))}
+            {user ? (
+              <>
+                <div className="px-4 py-2 text-sm text-dark-100">Signed in as {user.name}</div>
+                <button
+                  onClick={handleLogout}
+                  className="w-full text-left px-4 py-2 rounded-lg text-sm font-medium text-red-200 bg-red-500/10 border border-red-500/30 hover:bg-red-500/20 transition-all"
+                >
+                  Logout
+                </button>
+              </>
+            ) : (
+              <>
+                <Link
+                  to="/login"
+                  onClick={() => setMobileOpen(false)}
+                  className="block px-4 py-2 rounded-lg text-sm font-medium text-dark-100 hover:text-white hover:bg-dark-700/50 transition-all"
+                >
+                  Login
+                </Link>
+                <Link
+                  to="/register"
+                  onClick={() => setMobileOpen(false)}
+                  className="block px-4 py-2 rounded-lg text-sm font-semibold text-white bg-primary-600 hover:bg-primary-500 transition-all"
+                >
+                  Register
+                </Link>
+              </>
+            )}
           </div>
         )}
       </div>

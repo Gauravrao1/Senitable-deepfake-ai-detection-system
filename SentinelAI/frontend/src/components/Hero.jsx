@@ -67,11 +67,11 @@ const Hero = () => {
             <span className="gradient-text">SentinelAI</span>
           </h1>
 
-          <p className="text-xl sm:text-2xl text-dark-300 max-w-3xl mx-auto mb-4 font-light">
+          <p className="text-xl sm:text-2xl text-dark-100 max-w-3xl mx-auto mb-4 font-normal">
             Real-Time Deepfake & AI-Generated Content Detection
           </p>
 
-          <p className="text-lg text-dark-400 max-w-2xl mx-auto mb-10">
+          <p className="text-lg text-dark-200 max-w-2xl mx-auto mb-10">
             Multi-modal AI platform that detects manipulated images, AI-written text,
             and synthetic audio with forensic-grade analysis reports.
           </p>
@@ -104,7 +104,7 @@ const Hero = () => {
                   <h3 className="text-xl font-bold text-white mb-3 group-hover:text-primary-400 transition-colors">
                     {feature.title}
                   </h3>
-                  <p className="text-dark-400 leading-relaxed">
+                  <p className="text-dark-200 leading-relaxed">
                     {feature.desc}
                   </p>
                   <div className="mt-6 text-primary-400 text-sm font-semibold flex items-center gap-1 group-hover:gap-3 transition-all">
