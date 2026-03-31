@@ -14,6 +14,12 @@ logger = logging.getLogger(__name__)
 _model = None
 _tokenizer = None
 
+# Prefer higher-capacity detectors first; gracefully fall back if unavailable.
+_MODEL_CANDIDATES = [
+    "roberta-large-openai-detector",
+    "roberta-base-openai-detector",
+]
+
 
 def _load_model():
     """Load transformer model for text analysis."""
@@ -24,13 +30,18 @@ def _load_model():
     try:
         from transformers import AutoTokenizer, AutoModelForSequenceClassification
 
-        # This checkpoint is explicitly trained for AI-generated text detection.
-        model_name = "roberta-base-openai-detector"
-        _tokenizer = AutoTokenizer.from_pretrained(model_name)
-        _model = AutoModelForSequenceClassification.from_pretrained(model_name)
-        _model.eval()
-        logger.info("Text detection model loaded successfully")
-        return _model, _tokenizer
+        for model_name in _MODEL_CANDIDATES:
+            try:
+                _tokenizer = AutoTokenizer.from_pretrained(model_name)
+                _model = AutoModelForSequenceClassification.from_pretrained(model_name)
+                _model.eval()
+                logger.info(f"Text detection model loaded successfully: {model_name}")
+                return _model, _tokenizer
+            except Exception as inner_e:
+                logger.warning(f"Could not load text model '{model_name}': {inner_e}")
+
+        logger.warning("No transformer text detector model could be loaded. Using statistical analysis.")
+        return None, None
     except Exception as e:
         logger.warning(f"Could not load transformer model: {e}. Using statistical analysis.")
         return None, None
@@ -220,37 +231,53 @@ def analyze_text(text: str) -> dict:
         try:
             import torch
 
-            inputs = tokenizer(
-                text[:512],
-                return_tensors="pt",
-                truncation=True,
-                max_length=512,
-                padding=True,
-            )
-            with torch.no_grad():
-                outputs = model(**inputs)
-                probs = torch.softmax(outputs.logits, dim=1)
-                nn_ai_prob = probs[0][1].item()
+            # Run chunked inference to reduce single-window bias on long text.
+            chunk_scores = []
+            step = 380
+            chunk_size = 480
+            for start in range(0, len(text), step):
+                chunk = text[start:start + chunk_size]
+                if len(chunk.strip()) < 40:
+                    continue
+                inputs = tokenizer(
+                    chunk,
+                    return_tensors="pt",
+                    truncation=True,
+                    max_length=512,
+                    padding=True,
+                )
+                with torch.no_grad():
+                    outputs = model(**inputs)
+                    probs = torch.softmax(outputs.logits, dim=1)
+                    chunk_scores.append(probs[0][1].item())
+                if len(chunk_scores) >= 6:
+                    break
 
-            # Statistical and neural outputs are blended conservatively.
-            ai_probability = 0.45 * ai_probability + 0.55 * nn_ai_prob
+            if chunk_scores:
+                nn_ai_prob = float(sum(chunk_scores) / len(chunk_scores))
+                # Heuristic + NN blend, weighted more toward detector model.
+                ai_probability = 0.30 * ai_probability + 0.70 * nn_ai_prob
         except Exception as e:
             logger.warning(f"Transformer inference failed: {e}")
 
     # Conservative calibration: push weak evidence toward uncertainty.
     distance_from_mid = abs(ai_probability - 0.5)
-    if distance_from_mid < 0.08:
+    if distance_from_mid < 0.12:
+        ai_probability = 0.5
+
+    # Short text is less reliable for hard decisions.
+    if word_count < 40 and 0.12 < ai_probability < 0.88:
         ai_probability = 0.5
 
     # Verdict (strict against opposite outcomes):
     # only assign human when AI probability is clearly low.
-    if ai_probability >= 0.78:
+    if ai_probability >= 0.86:
         verdict = "LIKELY AI-GENERATED"
         risk_level = "HIGH"
-    elif ai_probability >= 0.62:
+    elif ai_probability >= 0.72:
         verdict = "POSSIBLY AI-ASSISTED"
         risk_level = "MEDIUM"
-    elif ai_probability <= 0.30:
+    elif ai_probability <= 0.18:
         verdict = "LIKELY HUMAN-WRITTEN"
         risk_level = "LOW"
     else:
@@ -285,7 +312,7 @@ def analyze_text(text: str) -> dict:
         "confidence": round(ai_probability * 100, 2),
         "is_ai_probability": round(ai_probability, 4),
         "is_human_probability": round(1 - ai_probability, 4),
-        "decision_policy": "strict_v2",
+        "decision_policy": "strict_v3",
         "word_count": word_count,
         "analysis_details": {
             "perplexity_features": perplexity_features,

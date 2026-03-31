@@ -224,18 +224,18 @@ def analyze_image(image_bytes: bytes) -> dict:
     heatmap = _generate_heatmap(img_array, pixel_analysis)
 
     # Conservative calibration around uncertainty band.
-    if abs(fake_probability - 0.5) < 0.08:
+    if abs(fake_probability - 0.5) < 0.12:
         fake_probability = 0.5
 
     # Determine verdict (strict against opposite outcomes):
     # only assign authentic when fake probability is clearly low.
-    if fake_probability >= 0.78:
+    if fake_probability >= 0.85:
         verdict = "LIKELY AI-GENERATED/MANIPULATED"
         risk_level = "HIGH"
-    elif fake_probability >= 0.62:
+    elif fake_probability >= 0.72:
         verdict = "SUSPICIOUS - POSSIBLE MANIPULATION"
         risk_level = "MEDIUM"
-    elif fake_probability <= 0.30:
+    elif fake_probability <= 0.18:
         verdict = "LIKELY AUTHENTIC"
         risk_level = "LOW"
     else:
@@ -248,7 +248,7 @@ def analyze_image(image_bytes: bytes) -> dict:
         "confidence": round(fake_probability * 100, 2),
         "is_fake_probability": round(fake_probability, 4),
         "is_real_probability": round(1 - fake_probability, 4),
-        "decision_policy": "strict_v2",
+        "decision_policy": "strict_v3",
         "analysis_details": {
             "noise_analysis": {
                 "score": round(pixel_analysis["noise_level"], 4),

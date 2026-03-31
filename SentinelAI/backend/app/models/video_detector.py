@@ -272,17 +272,17 @@ def _compute_verdict(byte_analysis: dict, frame_consistency: dict, frame_quality
         scores.append(0.15)
 
     fake_probability = sum(scores) / len(scores)
-    if abs(fake_probability - 0.5) < 0.08:
+    if abs(fake_probability - 0.5) < 0.12:
         fake_probability = 0.5
     confidence = round(fake_probability * 100, 1)
 
-    if confidence >= 78:
+    if confidence >= 85:
         verdict = "LIKELY AI-GENERATED / DEEPFAKE"
         risk_level = "HIGH"
-    elif confidence >= 62:
+    elif confidence >= 72:
         verdict = "POSSIBLY MANIPULATED"
         risk_level = "MEDIUM"
-    elif confidence <= 30:
+    elif confidence <= 18:
         verdict = "LIKELY AUTHENTIC"
         risk_level = "LOW"
     else:
@@ -295,7 +295,7 @@ def _compute_verdict(byte_analysis: dict, frame_consistency: dict, frame_quality
         "risk_level": risk_level,
         "is_fake_probability": round(fake_probability, 4),
         "is_real_probability": round(1 - fake_probability, 4),
-        "decision_policy": "strict_v2",
+        "decision_policy": "strict_v3",
     }
 
 
@@ -318,7 +318,7 @@ def analyze_video(video_bytes: bytes) -> Dict[str, Any]:
                 "risk_level": "MEDIUM",
                 "is_fake_probability": 0.5,
                 "is_real_probability": 0.5,
-                "decision_policy": "strict_v2",
+                "decision_policy": "strict_v3",
                 "analysis_details": {
                     "note": {
                         "score": 0.5,
@@ -438,12 +438,15 @@ def _fallback_analysis(video_bytes: bytes) -> Dict[str, Any]:
         fake_prob += 0.2
 
     confidence = round(fake_prob * 100, 1)
-    if confidence >= 50:
+    if confidence >= 72:
         verdict = "POSSIBLY MANIPULATED"
         risk_level = "MEDIUM"
-    else:
+    elif confidence <= 18:
         verdict = "LIKELY AUTHENTIC"
         risk_level = "LOW"
+    else:
+        verdict = "INCONCLUSIVE - LIMITED VIDEO SIGNAL"
+        risk_level = "MEDIUM"
 
     return {
         "verdict": verdict,

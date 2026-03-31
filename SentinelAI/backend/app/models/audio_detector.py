@@ -200,7 +200,7 @@ def analyze_audio(audio_bytes: bytes) -> dict:
             "confidence": 50.0,
             "is_fake_probability": 0.5,
             "is_real_probability": 0.5,
-            "decision_policy": "strict_v2",
+            "decision_policy": "strict_v3",
             "audio_info": {
                 "duration_seconds": features["duration"],
                 "sample_rate": features["sample_rate"],
@@ -229,18 +229,18 @@ def analyze_audio(audio_bytes: bytes) -> dict:
     fake_probability = max(0.0, min(1.0, fake_probability))
 
     # Conservative calibration around uncertainty band.
-    if abs(fake_probability - 0.5) < 0.08:
+    if abs(fake_probability - 0.5) < 0.12:
         fake_probability = 0.5
 
     # Verdict (strict against opposite outcomes):
     # only assign authentic when fake probability is clearly low.
-    if fake_probability >= 0.78:
+    if fake_probability >= 0.85:
         verdict = "LIKELY SYNTHETIC/CLONED VOICE"
         risk_level = "HIGH"
-    elif fake_probability >= 0.62:
+    elif fake_probability >= 0.72:
         verdict = "SUSPICIOUS — POSSIBLE VOICE MANIPULATION"
         risk_level = "MEDIUM"
-    elif fake_probability <= 0.30:
+    elif fake_probability <= 0.18:
         verdict = "LIKELY AUTHENTIC VOICE"
         risk_level = "LOW"
     else:
@@ -253,7 +253,7 @@ def analyze_audio(audio_bytes: bytes) -> dict:
         "confidence": round(fake_probability * 100, 2),
         "is_fake_probability": round(fake_probability, 4),
         "is_real_probability": round(1 - fake_probability, 4),
-        "decision_policy": "strict_v2",
+        "decision_policy": "strict_v3",
         "audio_info": {
             "duration_seconds": features["duration"],
             "sample_rate": features["sample_rate"],
