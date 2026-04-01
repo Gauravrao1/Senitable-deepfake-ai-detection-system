@@ -4,6 +4,7 @@ Uses statistical analysis and transformer-based features to detect AI-generated 
 Analyzes perplexity, burstiness, and linguistic patterns.
 """
 
+import os
 import re
 import math
 import logging
@@ -15,10 +16,20 @@ _model = None
 _tokenizer = None
 
 # Prefer higher-capacity detectors first; gracefully fall back if unavailable.
-_MODEL_CANDIDATES = [
+# You can override with env var TEXT_DETECTOR_MODELS (comma-separated list).
+_DEFAULT_MODEL_CANDIDATES = [
+    "openai-community/roberta-large-openai-detector",
+    "openai-community/roberta-base-openai-detector",
     "roberta-large-openai-detector",
     "roberta-base-openai-detector",
 ]
+
+
+def _get_model_candidates() -> list:
+    configured = os.getenv("TEXT_DETECTOR_MODELS", "").strip()
+    if not configured:
+        return _DEFAULT_MODEL_CANDIDATES
+    return [m.strip() for m in configured.split(",") if m.strip()]
 
 
 def _load_model():
@@ -30,7 +41,7 @@ def _load_model():
     try:
         from transformers import AutoTokenizer, AutoModelForSequenceClassification
 
-        for model_name in _MODEL_CANDIDATES:
+        for model_name in _get_model_candidates():
             try:
                 _tokenizer = AutoTokenizer.from_pretrained(model_name)
                 _model = AutoModelForSequenceClassification.from_pretrained(model_name)

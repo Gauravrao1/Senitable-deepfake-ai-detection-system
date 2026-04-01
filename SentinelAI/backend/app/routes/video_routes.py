@@ -10,6 +10,31 @@ ALLOWED_VIDEO_TYPES = {
 }
 
 
+def _enforce_strict_v3_media(result: dict) -> dict:
+    """Normalize media verdicts to strict_v3 thresholds at API boundary."""
+    p = result.get("is_fake_probability")
+    if p is None:
+        return result
+
+    if p >= 0.85:
+        result["verdict"] = "LIKELY AI-GENERATED / DEEPFAKE"
+        result["risk_level"] = "HIGH"
+    elif p >= 0.72:
+        result["verdict"] = "POSSIBLY MANIPULATED"
+        result["risk_level"] = "MEDIUM"
+    elif p <= 0.18:
+        result["verdict"] = "LIKELY AUTHENTIC"
+        result["risk_level"] = "LOW"
+    else:
+        result["verdict"] = "INCONCLUSIVE - NEEDS HIGHER-QUALITY VIDEO"
+        result["risk_level"] = "MEDIUM"
+
+    result["decision_policy"] = "strict_v3"
+    result["confidence"] = round(float(p) * 100, 2)
+    result["is_real_probability"] = round(1 - float(p), 4)
+    return result
+
+
 @router.post("/analyze")
 async def detect_video_deepfake(file: UploadFile = File(...)):
     """Analyze an uploaded video for deepfake/AI-generation indicators."""
@@ -27,6 +52,8 @@ async def detect_video_deepfake(file: UploadFile = File(...)):
 
     if "error" in result:
         raise HTTPException(status_code=422, detail=result["error"])
+
+    result = _enforce_strict_v3_media(result)
 
     return {
         "filename": file.filename,
