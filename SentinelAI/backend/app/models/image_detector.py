@@ -1,7 +1,7 @@
 """
 Image Deepfake Detector
-Uses EfficientNet with Transfer Learning for detecting AI-generated/manipulated images.
-Generates manipulation heatmaps using Grad-CAM.
+Uses signal-based forensic analysis for detecting AI-generated/manipulated images.
+Generates manipulation heatmaps from local artifact patterns.
 """
 
 import numpy as np
@@ -10,60 +10,6 @@ import io
 import logging
 
 logger = logging.getLogger(__name__)
-
-# Model will be loaded lazily on first use
-_model = None
-_device = None
-
-
-def _get_device():
-    """Get the best available device."""
-    global _device
-    if _device is not None:
-        return _device
-    try:
-        import torch
-        _device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    except ImportError:
-        _device = "cpu"
-    return _device
-
-
-def _load_model():
-    """Load EfficientNet model fine-tuned for deepfake detection."""
-    global _model
-    if _model is not None:
-        return _model
-
-    try:
-        import torch
-        import torch.nn as nn
-        from torchvision import models
-
-        device = _get_device()
-
-        # Load EfficientNet-B0 as base
-        model = models.efficientnet_b0(weights=models.EfficientNet_B0_Weights.DEFAULT)
-
-        # Replace classifier for binary classification (real vs fake)
-        num_features = model.classifier[1].in_features
-        model.classifier = nn.Sequential(
-            nn.Dropout(p=0.3),
-            nn.Linear(num_features, 256),
-            nn.ReLU(),
-            nn.Dropout(p=0.2),
-            nn.Linear(256, 2),
-        )
-
-        model = model.to(device)
-        model.eval()
-        _model = model
-        logger.info("Image deepfake detection model loaded successfully")
-        return _model
-
-    except Exception as e:
-        logger.warning(f"Could not load PyTorch model: {e}. Using fallback analysis.")
-        return None
 
 
 def _preprocess_image(image_bytes: bytes) -> np.ndarray:
@@ -110,11 +56,10 @@ def _analyze_pixel_patterns(img_array: np.ndarray) -> dict:
         "freq_energy_ratio": float(freq_energy_ratio),
         "h_symmetry": float(h_symmetry),
         "v_symmetry": float(v_symmetry),
-        "noise_map": noise.tolist(),
     }
 
 
-def _generate_heatmap(img_array: np.ndarray, analysis: dict) -> list:
+def _generate_heatmap(img_array: np.ndarray) -> list:
     """Generate manipulation probability heatmap."""
     from scipy import ndimage
 
@@ -166,62 +111,31 @@ def analyze_image(image_bytes: bytes) -> dict:
     # Pixel-level analysis
     pixel_analysis = _analyze_pixel_patterns(img_array)
 
-    # Calculate deepfake probability based on multiple signals
-    signals = []
-
-    # Noise level indicator (AI images often have uniform noise)
+    # Score from forensic signals only.
+    # Important: avoid untrained NN heads because they produce unstable outputs.
     noise_score = 1.0 - min(pixel_analysis["noise_level"] / 0.1, 1.0)
-    signals.append(noise_score * 0.25)
-
-    # Edge consistency (AI images may have inconsistent edges)
     edge_score = min(pixel_analysis["edge_consistency"] / 2.0, 1.0)
-    signals.append(edge_score * 0.2)
-
-    # Color uniformity (AI images can have unusual color distributions)
     color_score = 1.0 - min(pixel_analysis["color_uniformity"] / 0.3, 1.0)
-    signals.append(color_score * 0.2)
-
-    # Frequency analysis (AI images have different frequency patterns)
-    freq_score = abs(pixel_analysis["freq_energy_ratio"] - 1.5) / 1.5
-    freq_score = min(freq_score, 1.0)
-    signals.append(freq_score * 0.2)
-
-    # Symmetry analysis
+    freq_score = min(abs(pixel_analysis["freq_energy_ratio"] - 1.5) / 1.5, 1.0)
     sym_score = 1.0 - min((pixel_analysis["h_symmetry"] + pixel_analysis["v_symmetry"]) / 0.2, 1.0)
-    signals.append(sym_score * 0.15)
 
-    fake_probability = sum(signals)
+    weighted_signals = [
+        noise_score * 0.28,
+        edge_score * 0.22,
+        color_score * 0.20,
+        freq_score * 0.20,
+        sym_score * 0.10,
+    ]
+
+    fake_probability = sum(weighted_signals)
     fake_probability = max(0.0, min(1.0, fake_probability))
 
-    # Try neural network model for additional confidence
-    model = _load_model()
-    if model is not None:
-        try:
-            import torch
-            from torchvision import transforms
-
-            transform = transforms.Compose([
-                transforms.Resize((224, 224)),
-                transforms.ToTensor(),
-                transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
-            ])
-
-            image = Image.open(io.BytesIO(image_bytes)).convert("RGB")
-            input_tensor = transform(image).unsqueeze(0).to(_get_device())
-
-            with torch.no_grad():
-                output = model(input_tensor)
-                probabilities = torch.softmax(output, dim=1)
-                nn_fake_prob = probabilities[0][1].item()
-
-            # Blend pixel analysis with neural network conservatively.
-            fake_probability = 0.35 * fake_probability + 0.65 * nn_fake_prob
-
-        except Exception as e:
-            logger.warning(f"Neural network inference failed: {e}")
+    # If all signals agree weakly, avoid hard claims.
+    if np.std([noise_score, edge_score, color_score, freq_score, sym_score]) < 0.06:
+        fake_probability = 0.5
 
     # Generate heatmap
-    heatmap = _generate_heatmap(img_array, pixel_analysis)
+    heatmap = _generate_heatmap(img_array)
 
     # Conservative calibration around uncertainty band.
     if abs(fake_probability - 0.5) < 0.12:

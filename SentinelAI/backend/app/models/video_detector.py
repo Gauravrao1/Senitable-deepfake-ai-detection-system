@@ -4,10 +4,8 @@ Analyzes video files for deepfake indicators using frame-level analysis,
 temporal consistency checks, and motion pattern analysis.
 """
 
-import io
 import logging
 import hashlib
-import struct
 import math
 from typing import Dict, Any
 
@@ -272,7 +270,7 @@ def _compute_verdict(byte_analysis: dict, frame_consistency: dict, frame_quality
         scores.append(0.15)
 
     fake_probability = sum(scores) / len(scores)
-    if abs(fake_probability - 0.5) < 0.12:
+    if abs(fake_probability - 0.5) < 0.05:
         fake_probability = 0.5
     confidence = round(fake_probability * 100, 1)
 

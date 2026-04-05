@@ -238,6 +238,12 @@ def analyze_text(text: str) -> dict:
 
     # Try transformer model for enhanced detection
     model, tokenizer = _load_model()
+    allow_heuristic_only = os.getenv("TEXT_DETECTOR_ALLOW_HEURISTIC_ONLY", "true").strip().lower() in {
+        "1", "true", "yes", "on"
+    }
+    if (model is None or tokenizer is None) and not allow_heuristic_only:
+        logger.warning("Running heuristic-only text detection because no supported transformer model is available")
+
     if model is not None and tokenizer is not None:
         try:
             import torch
@@ -271,13 +277,13 @@ def analyze_text(text: str) -> dict:
         except Exception as e:
             logger.warning(f"Transformer inference failed: {e}")
 
-    # Conservative calibration: push weak evidence toward uncertainty.
+    # Conservative calibration: only flatten to uncertainty when evidence is truly borderline.
     distance_from_mid = abs(ai_probability - 0.5)
-    if distance_from_mid < 0.12:
+    if distance_from_mid < 0.05:
         ai_probability = 0.5
 
     # Short text is less reliable for hard decisions.
-    if word_count < 40 and 0.12 < ai_probability < 0.88:
+    if word_count < 40 and 0.35 < ai_probability < 0.65:
         ai_probability = 0.5
 
     # Verdict (strict against opposite outcomes):

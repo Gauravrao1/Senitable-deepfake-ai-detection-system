@@ -4,22 +4,23 @@
   "private": true,
   "description": "SentinelAI - Real-Time Deepfake & AI-Generated Content Detection Platform",
   "dependencies": {
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0",
-    "react-router-dom": "^6.21.1",
-    "react-scripts": "5.0.1",
+    "@chenglou/pretext": "^0.0.4",
     "axios": "^1.6.2",
     "chart.js": "^4.4.1",
+    "framer-motion": "^10.16.16",
+    "react": "^18.2.0",
     "react-chartjs-2": "^5.2.0",
+    "react-dom": "^18.2.0",
     "react-dropzone": "^14.2.3",
     "react-hot-toast": "^2.4.1",
     "react-icons": "^4.12.0",
-    "framer-motion": "^10.16.16"
+    "react-router-dom": "^6.21.1",
+    "react-scripts": "5.0.1"
   },
   "devDependencies": {
-    "tailwindcss": "^3.4.0",
     "autoprefixer": "^10.4.16",
-    "postcss": "^8.4.32"
+    "postcss": "^8.4.32",
+    "tailwindcss": "^3.4.0"
   },
   "scripts": {
     "start": "react-scripts start",
@@ -28,7 +29,15 @@
     "eject": "react-scripts eject"
   },
   "browserslist": {
-    "production": [">0.2%", "not dead", "not op_mini all"],
-    "development": ["last 1 chrome version", "last 1 firefox version", "last 1 safari version"]
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
   }
 }

@@ -65,7 +65,7 @@ async def image_detector_info():
     """Get information about the image detection module."""
     return {
         "module": "Image Deepfake Detector",
-        "techniques": ["CNN + EfficientNet (Transfer Learning)", "Pixel Pattern Analysis", "Frequency Domain Analysis"],
+        "techniques": ["Forensic Pixel Pattern Analysis", "Frequency Domain Analysis", "Artifact Heatmap Analysis"],
         "supported_formats": list(ALLOWED_IMAGE_TYPES),
         "max_file_size_mb": settings.MAX_FILE_SIZE / (1024 * 1024),
         "features": [

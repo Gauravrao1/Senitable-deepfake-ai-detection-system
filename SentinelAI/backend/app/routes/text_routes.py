@@ -55,11 +55,12 @@ async def text_detector_info():
     """Get information about the text detection module."""
     return {
         "module": "AI Text Detector",
-        "techniques": ["NLP Analysis", "Perplexity Scoring", "Burstiness Analysis", "Linguistic Pattern Recognition"],
+        "techniques": ["Transformer Detector Classification", "Burstiness Analysis", "Linguistic Pattern Analysis"],
         "max_text_length": 50000,
         "min_text_length": 20,
+        "recommended_setup": "Install transformers and a supported openai-detector model for reliable verdicts.",
         "features": [
-            "Perplexity-based analysis",
+            "Model-backed AI probability scoring",
             "Burstiness scoring (sentence uniformity)",
             "AI marker word detection",
             "Contraction usage analysis",

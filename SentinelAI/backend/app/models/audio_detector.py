@@ -229,7 +229,7 @@ def analyze_audio(audio_bytes: bytes) -> dict:
     fake_probability = max(0.0, min(1.0, fake_probability))
 
     # Conservative calibration around uncertainty band.
-    if abs(fake_probability - 0.5) < 0.12:
+    if abs(fake_probability - 0.5) < 0.05:
         fake_probability = 0.5
 
     # Verdict (strict against opposite outcomes):

@@ -69,7 +69,7 @@ async def video_detector_info():
     return {
         "module": "Video Deepfake Detector",
         "techniques": [
-            "Frame-level CNN Analysis",
+            "Frame-level Artifact Analysis",
             "Temporal Consistency Checking",
             "Byte Pattern Analysis",
             "Noise Uniformity Detection",

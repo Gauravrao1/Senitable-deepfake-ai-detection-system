@@ -1,0 +1,1 @@
+I checked the results twice, and the numbers still looked off. The first run was noisy, but the second one settled down after I changed the sample file. It is not perfect, yet it makes sense now, and I can explain why each file behaves the way it does.
