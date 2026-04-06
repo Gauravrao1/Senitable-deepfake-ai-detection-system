@@ -6,7 +6,7 @@
 
 @layer base {
   body {
-    @apply text-white font-sans antialiased;
+    @apply text-white font-sans antialiased; 
     background:
       radial-gradient(circle at 8% 14%, rgba(14, 165, 233, 0.18), transparent 34%),
       radial-gradient(circle at 92% 82%, rgba(245, 158, 11, 0.16), transparent 30%),
