@@ -21,7 +21,7 @@ function AppRoutes() {
   const isAuthPage = location.pathname === "/login" || location.pathname === "/register";
 
   return (
-    <div className="min-h-screen flex flex-col bg-dark-950">
+    <div className="min-h-screen flex flex-col bg-dark-950"> 
       {(isAuthenticated || !isAuthPage) && <Navbar />}
       <main className="flex-1">
         <Routes>
