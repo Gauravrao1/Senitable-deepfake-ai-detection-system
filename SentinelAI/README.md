@@ -1,7 +1,7 @@
 # 🛡️ SentinelAI — Real-Time Deepfake & AI-Generated Content Detection Platform
 
 <div align="center">
-
+ 
 **Multi-modal AI platform for detecting manipulated images, AI-written text, and synthetic audio**
 
 ![Python](https://img.shields.io/badge/Python-3.9+-blue?style=flat-square&logo=python)
