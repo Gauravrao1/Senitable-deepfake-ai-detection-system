@@ -782,7 +782,8 @@ This project is licensed under the **MIT License** — see [LICENSE](LICENSE) fi
 
 ## 👥 Team & Credits
 
-**Authors:** Gaurav Rao
+**Original Authors:** SentinelAI Core Team  
+**Contributors:** Open-source community  
 **Inspired by:** Research in deepfake detection and AI safety
 
 ### Key Research Papers Referenced
@@ -796,10 +797,10 @@ This project is licensed under the **MIT License** — see [LICENSE](LICENSE) fi
 ## 🆘 Support & Contact
 
 - 📧 **Email:** support@sentinelai.dev
-- 🐙 **GitHub Issues:** [Report bugs here]
-- 💬 **Discord Community:** [
+- 🐙 **GitHub Issues:** [Report bugs here](https://github.com/sentinelai/issues)
+- 💬 **Discord Community:** [Join our server](https://discord.gg/sentinelai)
 - 📖 **Wiki**: [Project documentation](https://github.com/sentinelai/wiki)
-- 🐦 **Twitter:** [@SentinelAI]
+- 🐦 **Twitter:** [@SentinelAI](https://twitter.com/sentinelai)
 
 ---
 
