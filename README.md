@@ -782,8 +782,7 @@ This project is licensed under the **MIT License** — see [LICENSE](LICENSE) fi
 
 ## 👥 Team & Credits
 
-**Original Authors:** SentinelAI Core Team  
-**Contributors:** Open-source community  
+**Authors:** Gaurav Rao
 **Inspired by:** Research in deepfake detection and AI safety
 
 ### Key Research Papers Referenced
