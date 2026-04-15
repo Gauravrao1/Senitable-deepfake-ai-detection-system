@@ -796,10 +796,10 @@ This project is licensed under the **MIT License** — see [LICENSE](LICENSE) fi
 ## 🆘 Support & Contact
 
 - 📧 **Email:** support@sentinelai.dev
-- 🐙 **GitHub Issues:** [Report bugs here](https://github.com/sentinelai/issues)
-- 💬 **Discord Community:** [Join our server](https://discord.gg/sentinelai)
+- 🐙 **GitHub Issues:** [Report bugs here]
+- 💬 **Discord Community:** [
 - 📖 **Wiki**: [Project documentation](https://github.com/sentinelai/wiki)
-- 🐦 **Twitter:** [@SentinelAI](https://twitter.com/sentinelai)
+- 🐦 **Twitter:** [@SentinelAI]
 
 ---
 
