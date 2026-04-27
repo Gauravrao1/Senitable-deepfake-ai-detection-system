@@ -6,7 +6,7 @@ This repository contains:
 - `SentinelAI/backend`: FastAPI API for media/text analysis and PDF report generation.
 - `SentinelAI/frontend`: React web app for upload, analysis, visualization, and report download.
 - `SentinelAI/sample_data`: sample assets and a script to run quick end-to-end checks.
-
+ 
 ## Highlights
 
 - 4 analysis modules: Image, Text, Audio, Video
