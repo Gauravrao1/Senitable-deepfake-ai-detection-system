@@ -9,7 +9,6 @@ ALLOWED_AUDIO_TYPES = {
     "audio/ogg", "audio/flac", "audio/x-flac", "audio/webm",
 }
 
-
 def _enforce_strict_v3_media(result: dict) -> dict:
     """Normalize media verdicts to strict_v3 thresholds at API boundary."""
     p = result.get("is_fake_probability")
