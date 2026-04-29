@@ -7,7 +7,7 @@ This repository contains:
 - `SentinelAI/frontend`: React web app for upload, analysis, visualization, and report download.
 - `SentinelAI/sample_data`: sample assets and a script to run quick end-to-end checks.
  
-## Highlights
+## Highlights 
 
 - 4 analysis modules: Image, Text, Audio, Video
 - Forensic-style result explanations and strict decision policy (`strict_v3`)
