@@ -29,7 +29,7 @@ SentinelAI/
 ---
 
 ## ✨ Key Features
-
+ 
 ### 🖼️ Image Detection
 - AI-generated image detection (DALL-E, Midjourney, Stable Diffusion)
 - Face manipulation detection
