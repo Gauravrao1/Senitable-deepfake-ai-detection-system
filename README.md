@@ -17,7 +17,7 @@ This repository contains:
 - React dashboard with risk distribution and confidence charts
 - Local session auth in frontend (demo workflow)
 
-## What Is Implemented (Current)
+## What Is Implemented (Current) 
 
 SentinelAI currently uses signal-based and heuristic analysis pipelines (plus optional transformer support for text). It does **not** currently ship a fully trained deep learning model package in this repository by default.
 
