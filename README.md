@@ -30,6 +30,7 @@ SentinelAI currently uses signal-based and heuristic analysis pipelines (plus op
   - Frequency-domain behavior
   - Symmetry patterns
 - 32x32 manipulation heatmap output
+- 
 - Strict thresholded verdict policy
 
 ### Text module
