@@ -11,7 +11,7 @@ This repository contains:
 
 - 4 analysis modules: Image, Text, Audio, Video
 - Forensic-style result explanations and strict decision policy (`strict_v3`)
-- Heatmap output for image analysis
+- Heatmap output for image analysis 
 - Spectrogram output for audio analysis
 - PDF report generation endpoint
 - React dashboard with risk distribution and confidence charts
